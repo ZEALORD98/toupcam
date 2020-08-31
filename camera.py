@@ -21,10 +21,10 @@ import os
 
 from PIL import Image
 from numpy import zeros, uint8, uint32
-from cStringIO import StringIO
+from io import StringIO
 # ============= local library imports  ==========================
-from core import lib, TOUPCAM_EVENT_IMAGE, TOUPCAM_EVENT_STILLIMAGE, success, HToupCam
-
+from core import lib, TOUPCAM_EVENT_IMAGE, TOUPCAM_EVENT_STILLIMAGE, success, HToupCam, ToupcamInst, TOUPCAM_MAX
+from toupcam import *
 
 class ToupCamCamera(object):
     _data = None
@@ -35,7 +35,8 @@ class ToupCamCamera(object):
     resolution = None
     size = None
 
-    def __init__(self, resolution=None, bits=32, size=None):
+    def __init__(self, resolution=None, bits=32, size=None, cid=None):
+
         if resolution is None and size is None:
             resolution = 2
 
@@ -47,7 +48,7 @@ class ToupCamCamera(object):
         else:
             self.size = size
 
-        self.cam = self.get_camera()
+        self.cam = self.get_camera(cid)
         self.bits = bits
 
     # icamera interface
@@ -101,6 +102,7 @@ class ToupCamCamera(object):
 
         args = self.get_size()
         if not args:
+            print('Failed opening camera')
             return
 
         h, w = args[1].value, args[0].value
@@ -226,10 +228,10 @@ class ToupCamCamera(object):
         lib.Toupcam_put_AutoExpoEnable(self.cam, expo_enabled)
 
     def get_camera(self, cid=None):
-        func = lib.Toupcam_Open
+        func = lib.Toupcam_OpenByIndex
         func.restype = ctypes.POINTER(HToupCam)
-        cam = func(cid)
-        return cam
+        return func(cid)
+
 
     def get_serial(self):
         sn = ctypes.create_string_buffer(32)
@@ -269,14 +271,19 @@ class ToupCamCamera(object):
     def set_size(self, w, h):
         self._lib_func('put_Size', ctypes.c_long(w), ctypes.c_long(h))
 
+    def enumerate_cameras():
+        return Toupcam.EnumV2()
+
 
 if __name__ == '__main__':
     import time
-    cam = ToupCamCamera()
-    cam.open()
-    time.sleep(1)
 
-    cam.save('foo.jpg')
+    cam0 = ToupCamCamera(cid=0,size=(2560,1922))    #L3CMOS05100KPA
+    cam1 = ToupCamCamera(cid=1,size=(1280,960))     #UCMOS05100KPA
+    if cam0.open() and cam1.open():
+        time.sleep(1)
 
+        cam0.save('cam0.jpg')
+        cam1.save('cam1.jpg')
 
 # ============= EOF =============================================

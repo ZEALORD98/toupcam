@@ -19,6 +19,7 @@
 import ctypes
 import os
 import sys
+
 # ============= local library imports  ==========================
 
 TOUPCAM_EVENT_EXPOSURE = 1  # exposure time changed
@@ -47,6 +48,36 @@ class HToupCam(ctypes.Structure):
     _fields_ = [('unused', ctypes.c_int)]
 
 
+TOUPCAM_MAX = 16
+NAME_BYTES = 32
+
+
+class ToupcamResolution(ctypes.Structure):
+    _fields_ = [('width', ctypes.c_uint),
+                ('height', ctypes.c_uint)]
+
+
+class ToupcamInst(ctypes.Structure):
+    _fields_ = [
+                ('name', (ctypes.c_char if sys.platform != 'win32' else ctypes.c_wchar) * NAME_BYTES),
+                ('flag', ctypes.c_uint),
+                ('maxspeed', ctypes.c_uint),
+                ('preview', ctypes.c_uint),
+                ('still', ctypes.c_uint),
+                ('res', ToupcamResolution * TOUPCAM_MAX)
+                ]
+
+
+# typedef struct{  #ifdef _WIN32
+# const wchar_t*  name; /* model name */
+# else    const char*    name;
+# #endif
+# unsigned     flag; /* TOUPCAM_FLAG_xxx */
+# unsigned     maxspeed; /* number of speed level, Toupcam_get_MaxSpeed, the speed range = [0, max], closed interval */
+# unsigned     preview; /* number of preview resolution, Toupcam_get_ResolutionNumber */
+# unsigned     still; /* number of still resolution, Toupcam_get_StillResolutionNumber */
+# ToupcamResolution  res[TOUPCAM_MAX]; }ToupcamModel;
+
 def success(r):
     """
         return true if r==0
@@ -56,6 +87,3 @@ def success(r):
     return r == 0
 
 # ============= EOF =============================================
-
-
-
