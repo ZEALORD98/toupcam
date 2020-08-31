@@ -2,7 +2,7 @@
 
 Python interface to ToupCam cameras.
 
-DLLs & .so files where put in the same x64 floder.
+DLLs & .so files where put in the same x64 folder.
 These newer files where brought from the toupcam SDK on Touptek official site.
 
 Changes were made to camera.py :
